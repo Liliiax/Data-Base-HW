@@ -8,11 +8,11 @@
 --    "Sales"."Customers";
 
 --2.	На основе таблицы Employees напишите запрос, возвращающий таблицу из 3 столбцов: Фамилия сотрудника, Имя сотрудника, e-mail адрес. Столбец e-mail адрес должен быть сформирован в соответствие со следующим шаблоном: <имя>.<фамилия>@<названиеорганизации>.ru. Название организации придумайте сами! Полученные e-mail должны быть в нижнем регистре. Символы, недопустимые в адресе эл.почты, должны быть заменены нижним подчеркиванием.
---select lastname as "Фамилия сотрудника", 
---firstname as "Имя сотрудника",
---lower( 
---replace(firstname, ' ', '_')|| '.' || replace(lastname, ' ', '_')|| '@hsecompany.ru' ) as "e-mail адрес"
---from "HR"."Employees";
+select lastname as "Фамилия сотрудника", 
+firstname as "Имя сотрудника",
+lower( 
+replace(replace(replace(firstname, ' ', '_'), '!', '_'), '?', '_') || '.' || replace(replace(replace(lastname, ' ', '_'), '!', '_'), '?', '_') || '@hsecompany.ru' ) as "e-mail адрес"
+from "HR"."Employees";
 --3.	Напишите запрос, возвращающий набор уникальных записей из таблиц Employees и Customers. Результирующая таблица должна содержать 3 столбца: country, region, city. 
 --select distinct country, region, city
 --from "HR"."Employees"
@@ -48,55 +48,60 @@
 --from
 --    "HR"."Employees";
 --6.	Напишите запрос, возвращающий следующие данные о сотрудниках: номер сотрудника, фамилия сотрудника, дата рождения и вычисляемый столбец «ДР». Вычисляемый столбец должен содержать 1- если дня рождения еще не было, или 0 – если день рождения уже прошел. Отсортируйте результирующую выборку таким образом, чтобы работники у которых еще не было дня рождения были сверху, причем в порядке «приближения» дня рождения.
---select 
---	empid as "Номер сотрудника",
---	lastname as "Фамилия сотрудника",
---	birthdate as "Дата рождения сотрудника",
---	case  
---	when date_part('month', birthdate)<date_part('month', current_date) or  
---	(date_part('month', birthdate)=date_part('month', current_date) and date_part('day', birthdate)<date_part('day', current_date)) then 1
--- 	else 0
---	end as "ДР"
---from "HR"."Employees";
+select 
+	empid as "Номер сотрудника",
+	lastname as "Фамилия сотрудника",
+	birthdate as "Дата рождения сотрудника",
+	case  
+	when date_part('month', birthdate)<date_part('month', current_date) or  
+	(date_part('month', birthdate)=date_part('month', current_date) and date_part('day', birthdate)<date_part('day', current_date)) then 1
+ 	else 0
+	end as "ДР"
+from "HR"."Employees"
+order by "ДР" desc, date_part('month', birthdate), date_part('day', birthdate);
 
 --Задание 2. Использование фильтрации 
 --1.	Выведите из таблицы, содержащей сведения о заказах строки с 51 по 100, упорядоченные по дате заказа
---select *
---from ( select * from "Sales"."Orders" limit 50 offset 50)
---order by orderdate asc;
+select *
+from "Sales"."Orders" 
+order by orderdate asc
+limit 50 offset 50;
 --2.	Отобразите поставщиков, у которых отсутствует факс
---select *
---from "Sales"."Customers"
---where fax is null or fax='';
+select *
+from "Sales"."Customers"
+where fax is null or fax='' or fax='NULL';
 --3.	Выведите название и цену продуктов, при условии, что цена находится в диапазоне от 100 до 250.
 --select productname, unitprice 
 --from "Production"."Products"
 --where unitprice::numeric>=100 and unitprice::numeric<=250;
 --4.	Напишите запрос, возвращающий список работников мужского пола, работающие менеджерами в Лондоне.
---select *
---from "HR"."Employees"
---where lower(titleofcourtesy) in ('mr.', 'mr', 'dr.') and title='Sales Manager' and city='London';
+select *
+from "HR"."Employees"
+where titleofcourtesy in ('mr.','Mr.','MR.', 'MR', 'Mr','Dr.','DR.' ,'mr', 'dr.') and title ilike '%manager%' and city='London';
 --5.	Выведите все заказы, сделанные (оформленные) после 10 апреля 2008 года
---select *
---from "Sales"."Orders"
---where shippeddate>'2008-04-10'::date;
+select *
+from "Sales"."Orders"
+where orderdate>'2008-04-10'::date;
 --6.	Напишите запрос, извлекающий запись о сотруднике с номером телефона (206) 555-0100
 --select *
 --from "HR"."Employees"
 --where phone='(206) 555-0100';
 --7.	Выведите заказчиков с именами кроме “Linda”, “Robert”, “Ann”, “Venky”
---select *
---from "HR"."Employees"
---where firstname not in ('Linda', 'Robert', 'Ann', 'Venky');
+select *
+from "Sales"."Customers"
+where  contactname not like '%,%Linda' and
+    contactname  not like '%,%Robert' and
+    contactname not like '%,%Ann' and
+    contactname not like '%,%Venky';
 --8.	Выведите информацию о заказчиках, сформировав два вычисляемых столбца: Фамилия заказчика и Имя заказчика. В результирующую выборку должны попасть только те заказчики, чье имя начинается либо на букву "P" либо на букву "M", а фамилия при этом начинается либо на “S” либо на “K”. Фильтрация должна производится на исходных данных столбца (не на вычисляемом выражении) 
---select
---    substring(contactname from '^[^,]+') as "Фамилия заказчика", 
---    substring(contactname from '[^,]+$') as "Имя заказчика"     
---from
---    "Sales"."Customers"
---where (substring(contactname from '[^,]+$') like ' P%' or substring(contactname from '[^,]+$') like ' M%')
---      and (substring(contactname from '^[^,]+') like 'S%' or substring(contactname from '^[^,]+') like 'K%') 
+select
+    substring(contactname from '^[^,]+') as "Фамилия заказчика", 
+    substring(contactname from '[^,]+$') as "Имя заказчика"     
+from
+    "Sales"."Customers"
+where (contactname like '%,%P%' or contactname like '%,%M%')
+      and (contactname like 'S%' or contactname like 'K%'); 
 --9.	Выведите заказчиков, чьи контактные данные состоят из двух и более частей. 
---select *
---from "Sales"."Customers"
---where contactname like '% %';
+select *
+from "Sales"."Customers"
+where contactname ~ '\S+\s+\S+';
