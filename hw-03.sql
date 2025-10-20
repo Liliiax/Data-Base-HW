@@ -1,0 +1,159 @@
+--Домашняя работа 3. 
+--
+--Задание 1. Использование операторов наборов записей (UNION, EXCEPT, INTERSECT)
+--    1. Выведите 2 самых первых заказа сделанных первым заказчиком (custid=1) и 2 самых последних его заказа. Выборка должна быть упорядочена по годам и месяцам 
+--       Ответ: 
+--       (select replace(c.companyname, 'Customer ', '' ) as "Customer" ,o.orderid, to_char(o.orderdate, 'YYYY-MM') as "Month-Year"
+--       from "Sales"."Orders"o
+--       join "Sales"."Customers"c on o.custid=c.custid
+--       where o.custid = 1
+--       order by to_char(o.orderdate, 'YYYY-MM') asc
+--       limit 2)
+--       union 
+--       (select replace(c.companyname, 'Customer ', '') as "Customer" ,o.orderid, to_char(o.orderdate, 'YYYY-MM') as "Month-Year"
+--       from "Sales"."Orders"o
+--       join "Sales"."Customers"c on o.custid=c.custid
+--       where o.custid = 1
+--       order by to_char(o.orderdate, 'YYYY-MM') desc
+--       limit 2)
+--       order by "Month-Year" asc
+
+--    2. Выведите по 2 самых дешевых продукта каждого поставщика из списка (2, 5, 15, 25). Выборка должна быть упорядочена по категории и цене.
+--       Ответ: (select replace(s.companyname, 'Supplier ', '') as "Supplier", p.productname as "Product", p.unitprice as "Price", c.categoryname as "Category"
+--       from "Production"."Products"p
+--       join "Production"."Suppliers"s on p.supplierid=s.supplierid 
+--       join "Production"."Categories"c on c.categoryid=p.categoryid 
+--       where p.supplierid=2
+--       order by p.unitprice asc 
+--       limit 2)
+--       union
+--       (select replace(s.companyname, 'Supplier ', '') as "Supplier", p.productname as "Product", p.unitprice as "Price", c.categoryname as "Category"
+--       from "Production"."Products"p
+--       join "Production"."Suppliers"s on p.supplierid=s.supplierid 
+--       join "Production"."Categories"c on c.categoryid=p.categoryid
+--       where p.supplierid=15
+--       order by p.unitprice asc 
+--       limit 2)
+--       union 
+--       (select replace(s.companyname, 'Supplier ', '') as "Supplier", p.productname as "Product", p.unitprice as "Price", c.categoryname as "Category"
+--       from "Production"."Products"p
+--       join "Production"."Suppliers"s on p.supplierid=s.supplierid 
+--       join "Production"."Categories"c on c.categoryid=p.categoryid
+--       where p.supplierid=5
+--       order by p.unitprice asc 
+--       limit 2)
+--       union 
+--       (select replace(s.companyname, 'Supplier ', '') as "Supplier", p.productname as "Product", p.unitprice as "Price",c.categoryname as "Category"
+--       from "Production"."Products"p
+--       join "Production"."Suppliers"s on p.supplierid=s.supplierid 
+--       join "Production"."Categories"c on c.categoryid=p.categoryid
+--       where p.supplierid=25
+--       order by p.unitprice asc 
+--       limit 2)
+--       order by "Category" asc, "Price" desc;
+--       
+
+--    3. Сформируйте 2 выборки следующего вида:
+--
+--        a. В первом случае, выборка должна содержать список продуктов, которые входили в «корзину» первого покупателя (custid=1) и точно не входили в объединенные корзины 2 и 3 покупателей
+--           Ответ: (select p.productname, p.unitprice, c.categoryname
+--           from "Production"."Products"p 
+--           join "Sales"."OrderDetails"od on od.productid=p.productid 
+--           join "Production"."Categories"c on p.categoryid=c.categoryid
+--           join "Sales"."Orders"o on o.orderid=od.orderid
+--           where o.custid=1)
+--           except
+--           (select p.productname, p.unitprice, c.categoryname
+--           from "Production"."Products"p 
+--           join "Sales"."OrderDetails"od on od.productid=p.productid 
+--           join "Production"."Categories"c on p.categoryid=c.categoryid
+--           join "Sales"."Orders"o on o.orderid=od.orderid
+--           where o.custid in (2,3))
+--        b. Во втором случае, выборка должна включать только те продукты, которые присутствуют в продуктовых «корзинах» покупателей 2, 3 и 14 
+--           Ответ: (select p.productname, p.unitprice, c.categoryname
+--           from "Production"."Products"p 
+--           join "Sales"."OrderDetails"od on od.productid=p.productid 
+--           join "Production"."Categories"c on p.categoryid=c.categoryid
+--           join "Sales"."Orders"o on o.orderid=od.orderid
+--           where o.custid=2)
+--           intersect
+--           (select p.productname, p.unitprice, c.categoryname
+--           from "Production"."Products"p 
+--           join "Sales"."OrderDetails"od on od.productid=p.productid 
+--           join "Production"."Categories"c on p.categoryid=c.categoryid
+--           join "Sales"."Orders"o on o.orderid=od.orderid
+--           where o.custid=3)
+--           intersect
+--           (select p.productname, p.unitprice, c.categoryname
+--           from "Production"."Products"p 
+--           join "Sales"."OrderDetails"od on od.productid=p.productid 
+--           join "Production"."Categories"c on p.categoryid=c.categoryid
+--           join "Sales"."Orders"o on o.orderid=od.orderid
+--           where o.custid=14)
+           
+
+--    4. Сформируйте 2 выборки следующего вида:
+--
+--        a. В первом случае выборка должна включать уникальный список только тех клиентов, с которыми сотрудник взаимодействовал в 2008 году и точно не взаимодействовал в 2007
+--           (select distinct empid, custid      
+--           from "Sales"."Orders" 
+--           where orderdate>='2008-01-01'::date and orderdate<'2009-01-01'::date) except                                               
+--           (select distinct empid, custid 
+--           from "Sales"."Orders" 
+--           where orderdate>='2007-01-01'::date and orderdate<'2008-01-01'::date) order by "empid"
+--           
+--        b. Вторая выборка должна включать уникальный список тех клиентов, с которыми сотрудник взаимодействовал и в 2008 году и в 2007
+--           (select distinct empid, custid      
+--           from "Sales"."Orders"
+--           where orderdate>='2008-01-01'::date and orderdate<'2009-01-01'::date) INTERSECT
+--           (select distinct empid, custid
+--           from "Sales"."Orders"
+--           where orderdate>='2007-01-01'::date and orderdate<'2008-01-01'::date) order by "empid"
+
+--Задание 2. Анализ планов выполнения
+--    1. Проанализируйте план выполнения запроса из задания 1.3a
+           
+--       Результаты выполнения запроса explain analyze к 1.3а: сам план выполнения +:
+--       Planning Time: 1.027 ms
+--       Execution Time: 0.618 ms
+           
+--    2. Измените порядок таблиц в предложении FROM и сравните планы выполнения.
+           
+--       Для такого порядка:
+--			from "Sales"."OrderDetails"od
+--          join "Sales"."Orders"o on od.orderid=o.orderid 
+--          join "Production"."Products"p  on p.productid=od.productid
+--          join "Production"."Categories"c on p.categoryid=c.categoryid 
+           
+--       Planning Time: 0.809 ms
+--       Execution Time: 0.441 ms
+--       
+--       Для такого порядка:   
+--			from "Production"."Categories"c
+--          join "Production"."Products"p on p.categoryid=c.categoryid
+--          join "Sales"."OrderDetails"od  on p.productid=od.productid
+--          join "Sales"."Orders"o on od.orderid=o.orderid 
+           
+--       Planning Time: 1.227 ms
+--       Execution Time: 0.704 ms
+           
+--Для такого порядка:
+--			from "Sales"."Orders"o 
+--			join "Sales"."OrderDetails"od on od.orderid=o.orderid 
+--			join "Production"."Products"p on p.productid=od.productid
+--			join "Production"."Categories"c on p.categoryid=c.categoryid
+--
+--		Planning Time: 0.782 ms
+--		Execution Time: 0.400 ms
+           
+--    3. Определите, влияет ли порядок таблиц на производительность запроса.
+--       Ответ: да, влияет
+--    4. Приведите пример, объясните результат
+--       Ответ: По примерам из пункта 2 видно, что если перечислять таблицы от большего размера к меньшему
+--       (Orders самая большая ,Categories самая маленькая), то производительность запроса растет, 
+--       если же перечислять сначала более маленькие таблицы, то запрос выполняется медленнее. Можно
+--       предположить, что это происходит потому что в зависимости от порядка перечисления PostgreSQL 
+--       составляет разные планы выполнения с разными соединениями и, когда фильтрация начинается с 
+--       больших таблиц, больший объем данных отбрасывается в начале, соответственно на следующий этап
+--       выполнения передается меньше данных, что эффективнее, чем если бы в начале отбрасывалось
+--       маленькое кол-во данных.
