@@ -43,7 +43,8 @@ order by c.country, c.city;
 --5.	Сформируйте выборку следующего вида:
 --Выборка должна содержать информацию о Заказчиках из Бразилии и Канады, которые сделали заказы весной 2007 года, при этом адрес доставки должен совпадать с адресом Заказчика (под адресом подразумевается страна и город).
 --Столбец «Сумма заказов с учетом скидки» должен содержать общую стоимость заказов конкретного заказчика за указанный период
-select replace(c.companyname, 'Customer ', '') as "Заказчик", (c.country ||', ' || c.city) as "Адрес клиента",(o.shipcountry ||', ' || o.shipcity) as "Адрес доставки", sum(od.qty*od.unitprice*(1-od.discount)) as "Сумма заказов с учетом скидки"
+select replace(c.companyname, 'Customer ', '') as "Заказчик", (c.country ||', ' || c.city) as "Адрес клиента",(o.shipcountry ||', ' || o.shipcity) as "Адрес доставки",
+    sum(od.qty*od.unitprice*(1-od.discount)) as "Сумма заказов с учетом скидки"
 from "Sales"."Customers"c
 join "Sales"."Orders"o on o.custid = c.custid
 join "Sales"."OrderDetails"od on od.orderid = o.orderid
