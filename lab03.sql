@@ -12,24 +12,27 @@ where (o.shipcountry = 'Sweden' and o.shippeddate >= '2006-12-01'::date and o.sh
 --
 --В столбцах Название продукта и Поставщик необходимо исключить слова Product и Supplier, соответственно.
 --В выборке должны присутствовать только те продукты, которые относятся к категориям с 1 по 5 и при этом их поставщики находятся в Европе.
---select 
---replace(productname, 'Product', '') as "Название продукта" , unitprice as "Цена" ,
---c.categoryname as "Категория", replace(s.companyname, 'Supplier', '') as "Поставщик", s.phone as "Телефон", s.country as "Страна"
---from "Production"."Products" p
---join "Production"."Categories" c on p.categoryid=c.categoryid 
---join "Production"."Suppliers" s on p.supplierid=s.supplierid
---where p.categoryid>=1 and p.categoryid<=5 and s.country in ('Spain', 'UK','Finland', 'Denmark' ,'Russia', 'Germany', 'Italy', 'Netherlands', 'Norway', 'France', 'Sweden');
---3.	Сформируйте выборку следующего вида:
+select 
+replace(productname, 'Product', '') as "Название продукта" , unitprice as "Цена" ,
+c.categoryname as "Категория", replace(s.companyname, 'Supplier', '') as "Поставщик",
+    s.phone as "Телефон", s.country as "Страна"
+from "Production"."Products" p
+join "Production"."Categories" c on p.categoryid=c.categoryid 
+join "Production"."Suppliers" s on p.supplierid=s.supplierid
+where p.categoryid>=1 and p.categoryid<=5 and s.country in ('Spain', 'UK','Finland', 'Denmark' ,'Russia', 'Germany', 'Italy', 'Netherlands', 'Norway', 'France', 'Sweden');
+3.	Сформируйте выборку следующего вида:
 --В столбцах Название продукта и Заказчик необходимо исключить слова Product и Customer, соответственно 
 --В столбце Стоимость с учетом скидки необходимо рассчитать сумму, которую должен заплатить за данный товар клиент с учетом количества товара и предоставленной скидки
 --Выборка должна содержать информацию о Заказчиках из Бразилии и Канады, которые сделали заказы весной 2007 года, при этом адрес доставки должен совпадать с адресом Заказчика (под адресом подразумевается страна и город).
---select replace(c.companyname, 'Customer', '') as "Заказчик", (c.country || ',' || c.city) as "Адрес клиента", (o.shipcountry || ',' || o.shipcity) as "Адрес доставки",
---replace(p.productname, 'Product', '') as "Название продукта", od.unitprice*od.qty *(1-od.discount) as "Стоимость с учетом скидки" 
---from "Sales"."Customers" c
---join "Sales"."Orders" o on o.custid= c.custid
---join "Sales"."OrderDetails" od on od.orderid=o.orderid
---join "Production"."Products" p on p.productid=od.productid 
---where o.shipcity =c.city and o.shipcountry=c.country and (c.country='Canada' or c.country='Brazil') and o.orderdate>='2007-03-01'::date and o.orderdate<='2007-05-31'::date
+select replace(c.companyname, 'Customer', '') as "Заказчик",
+    (c.country || ',' || c.city) as "Адрес клиента", (o.shipcountry || ',' || o.shipcity) as "Адрес доставки",
+replace(p.productname, 'Product', '') as "Название продукта",
+    od.unitprice*od.qty *(1-od.discount) as "Стоимость с учетом скидки" 
+from "Sales"."Customers" c
+join "Sales"."Orders" o on o.custid= c.custid
+join "Sales"."OrderDetails" od on od.orderid=o.orderid
+join "Production"."Products" p on p.productid=od.productid 
+where o.shipcity =c.city and o.shipcountry=c.country and (c.country='Canada' or c.country='Brazil') and o.orderdate>='2007-03-01'::date and o.orderdate<='2007-05-31'::date
 
 --4.	Сформируйте выборку следующего вида:
 --Выборка должна содержать набор уникальных записей с информацией о сотрудниках магазина и их клиентах при условии, что:
@@ -47,10 +50,10 @@ from "HR"."Employees"e
 left join "Sales"."Orders"o on e.empid=o.empid where o.orderid is null;
 
 --6.	Напишите запрос, возвращающий список заказов, которые не являются международными (страна доставки заказа и страна клиента совпадают)
---select o.*
---from "Sales"."Orders"o 
---join "Sales"."Customers" c on o.custid=c.custid 
---where o.shipcountry=c.country;
+select o.*
+from "Sales"."Orders"o 
+join "Sales"."Customers" c on o.custid=c.custid 
+where o.shipcountry=c.country;
 --
 --7.	Выведите информацию о тех товарах, которые никогда не продавались (не вошли ни в один заказ)
 
@@ -62,19 +65,28 @@ left join "Sales"."Orders"o on e.empid=o.empid where o.orderid is null;
  where od.productid is null;
 
 --8.	Выведите уникальный список сотрудников, у которых есть в подчинении другие сотрудники
---select distinct e.empid, e.lastname , e.firstname , e.title  from "HR"."Employees"e 
---join "HR"."Employees" ee on e.empid =ee.mgrid ;
+select distinct e.empid, e.lastname , e.firstname , e.title  from "HR"."Employees"e 
+join "HR"."Employees" ee on e.empid =ee.mgrid ;
 ----9.	Сформируйте выборки следующего вида:
 ----
 ----a.	Выборка должна содержать уникальный список товаров, которые находятся в одной категории и при этом имеют одинаковую цену
---select distinct p.productid, p.productname, p.supplierid , p.categoryid , p.unitprice , p.discontinued  from "Production"."Products" p 
---join "Production"."Products" p1 on p.categoryid =p1.categoryid and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
+select distinct p.productid, p.productname, p.supplierid , p.categoryid , p.unitprice ,
+    p.discontinued  from "Production"."Products" p 
+join "Production"."Products" p1 on p.categoryid =p1.categoryid 
+    and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
 ----b.	Выборка должна содержать уникальный список товаров, которые поставляются одним и тем же поставщиком и при этом имеют одинаковую цену
---select distinct p.productid, p.productname, p.supplierid , p.categoryid , p.unitprice , p.discontinued  from "Production"."Products" p 
---join "Production"."Products" p1 on p.supplierid  =p1.supplierid  and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
+select distinct p.productid, p.productname, p.supplierid , p.categoryid ,
+    p.unitprice , p.discontinued  from "Production"."Products" p 
+join "Production"."Products" p1 on p.supplierid  =p1.supplierid  
+    and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
 ----c.	Выборка должна содержать уникальный список товаров, которые находятся в одной категории, поставляются одним и тем же поставщиком и при этом имеют одинаковую цену
---select distinct p.productid, p.productname, p.supplierid , p.categoryid , p.unitprice , p.discontinued  from "Production"."Products" p 
---join "Production"."Products" p1 on p.categoryid =p1.categoryid and p.supplierid  =p1.supplierid  and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
+select distinct p.productid, p.productname, p.supplierid , p.categoryid ,
+    p.unitprice , p.discontinued  from "Production"."Products" p 
+join "Production"."Products" p1 on p.categoryid =p1.categoryid 
+    and p.supplierid  =p1.supplierid  and p.unitprice =p1.unitprice and p.productid <>p1.productid ; 
 ----d.	Выборка должна содержать уникальный список товаров, которые находятся в одной категории, поставляются одним и тем же поставщиком и при этом имеют разную цену
---select distinct p.productid, p.productname, p.supplierid , p.categoryid , p.unitprice , p.discontinued  from "Production"."Products" p 
---join "Production"."Products" p1 on p.categoryid =p1.categoryid and p.supplierid  =p1.supplierid  and p.unitprice<>p1.unitprice  ; 
+select distinct p.productid, p.productname, p.supplierid , p.categoryid ,
+    p.unitprice , p.discontinued  from "Production"."Products" p 
+join "Production"."Products" p1 on p.categoryid =p1.categoryid
+    and p.supplierid  =p1.supplierid  and p.unitprice<>p1.unitprice  ; 
+
