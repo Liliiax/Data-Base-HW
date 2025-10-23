@@ -20,7 +20,7 @@ from "Production"."Products" p
 join "Production"."Categories" c on p.categoryid=c.categoryid 
 join "Production"."Suppliers" s on p.supplierid=s.supplierid
 where p.categoryid>=1 and p.categoryid<=5 and s.country in ('Spain', 'UK','Finland', 'Denmark' ,'Russia', 'Germany', 'Italy', 'Netherlands', 'Norway', 'France', 'Sweden');
-3.	Сформируйте выборку следующего вида:
+-- 3.	Сформируйте выборку следующего вида:
 --В столбцах Название продукта и Заказчик необходимо исключить слова Product и Customer, соответственно 
 --В столбце Стоимость с учетом скидки необходимо рассчитать сумму, которую должен заплатить за данный товар клиент с учетом количества товара и предоставленной скидки
 --Выборка должна содержать информацию о Заказчиках из Бразилии и Канады, которые сделали заказы весной 2007 года, при этом адрес доставки должен совпадать с адресом Заказчика (под адресом подразумевается страна и город).
@@ -89,4 +89,5 @@ select distinct p.productid, p.productname, p.supplierid , p.categoryid ,
     p.unitprice , p.discontinued  from "Production"."Products" p 
 join "Production"."Products" p1 on p.categoryid =p1.categoryid
     and p.supplierid  =p1.supplierid  and p.unitprice<>p1.unitprice  ; 
+
 
