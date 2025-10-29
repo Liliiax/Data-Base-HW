@@ -1,0 +1,101 @@
+--Домашняя работа 4. Использование подзапросов и табличных выражений
+--    1. Выведите самые дорогие продукты в каждой категории. Детали должны присутствовать! 
+--Решите данную задачу с использованием: 
+--        a. вложенного подзапроса
+--           select p.productname, p.categoryid, p.unitprice
+--           from "Production"."Products"p
+--           join (select categoryid, max(unitprice) as mprice
+--           from "Production"."Products" group by categoryid) as m 
+--           on p.categoryid=m.categoryid and p.unitprice = m.mprice;
+--        b. коррелированного подзапроса
+--           select p.productname, p.categoryid, p.unitprice
+--           from "Production"."Products"p
+--           where p.unitprice=(select max(pr.unitprice) 
+--           from "Production"."Products"pr where pr.categoryid=p.categoryid);
+--        c. оконной функции
+--           select productname, categoryid, unitprice from 
+--           (select p.productname, p.categoryid, p.unitprice, rank() over (partition by p.categoryid order by p.unitprice desc) as "Rank"
+--           from "Production"."Products"p) as "Result" 
+--           where "Rank"=1;
+
+--    2. Выведите код заказчика, год заказа, ранг по каждому заказчику в каждом году в соответствии с общей стоимостью заказа (OrderTotal) и стоимость заказа. В выборке должны присутствовать только записи с рангом 1 и 2. Воспользуйтесь представлением public."OrderValues" 
+--       with ranked as (select custid, extract(year from orderdate) as "Year", 
+--       rank() over (partition by custid order by "OrderTotal" asc) as "rang", "OrderTotal"
+--       from public."OrderValues")
+--       select * from ranked where "rang"=1 or "rang"=2;
+--
+--    3. Выведите информацию о заказчиках, за исключением тех, кто купил менее 30 наименований продуктов.
+--       select c.custid, c.companyname, c.contacttitle
+--       from "Sales"."Customers"c
+--       where c.custid in (select o.custid
+--       from "Sales"."Orders"o
+--       join "Sales"."OrderDetails"od on o.orderid = od.orderid group by o.custid
+--       having count(distinct od.productid) >= 30);
+
+--    4. Используя запрос к таблице Продуктов сформируйте выборку следующего вида:
+--
+--Для формирования значений в столбцах Category Name и AveragePrice (средняя цена продуктов по категории) используйте коррелированные подзапросы. Выборка должна включать только те товары, цена которых выше средней по категории.
+--select p.productname, p.UnitPrice,
+--(select c.categoryname from "Production"."Categories"c
+--where c.categoryid = p.categoryid) as "CategoryName",
+--(select avg(pr.unitprice::numeric)::money from "Production"."Products"pr
+--where pr.categoryid = p.categoryid) as "AveragePrice"
+--from "Production"."Products"p
+--where p.unitprice>(select avg(pr.unitprice::numeric)::money
+--from "Production"."Products"pr
+--where p.categoryid = pr.categoryid);
+--
+--
+--    5. Выведите список товаров, цена которых выше средней цены по категории.
+--
+--Для формирования столбцов categoryname и avg_unitprice используйте коррелированные подзапросы 
+
+--Ответ: кажется, 4 и 5 задания одинаковые с точностью до названия столбцов
+
+--    6. Сформируйте выборку следующего вида:
+
+--Выборка должна содержать только те записи, в которых стоимость заказов, сделанных конкретным заказчиком за самый первый год, когда он делал заказы (first-year) не превышает стоимость заказов за последующие года. То есть, разница (diff) между стоимостью заказов текущего года и заказов за первый год меньше нуля.
+--
+--with year_total as (select o.custid,c.companyname, extract(year from o.orderdate) as "year",sum(od.unitprice*od.qty*(1-od.discount)) as "ord_total" 
+--from "Sales"."Orders"o
+--join "Sales"."OrderDetails"od on od.orderid=o.orderid
+--join "Sales"."Customers"c on c.custid=o.custid
+--group by o.custid, c.companyname,extract(year from o.orderdate)),
+--first_year as (select custid, min("year") as "first-year"
+--from year_total
+--group by custid)
+--select y.custid, y.companyname, y."year", y.ord_total, fy."first-year",
+--yf.ord_total-y."ord_total" as "diff"
+--from year_total y
+--join first_year fy on y.custid = fy.custid 
+--left join year_total yf on y.custid = yf.custid and fy."first-year"=yf."year"
+--where (y.ord_total - yf.ord_total)::numeric<0; 
+--
+--    7. Выведите следующую информацию о заказчиках и количестве сделанных ими заказов. Решите данную задачу 2 способами:
+--        a. Используя коррелированный подзапрос
+--           select c.companyname, c.country,
+--           (select count(*) from "Sales"."Orders"o
+--           where o.custid = c.custid) as "ord_qw"
+--           from "Sales"."Customers"c;
+--        b. Используя подзапрос LATERAL
+--           select c.companyname, c.country, o."ord_qw"
+--           from "Sales"."Customers"c
+--           left join lateral (select count(*) from "Sales"."Orders"
+--           where custid = c.custid) as o(ord_qw) on true;
+--
+--
+--    8. Проанализируйте и объясните следующий запрос. 
+--with recursive hw(_array, i, r) as (
+--
+--    values (array['H', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd', '!'], 1, '')
+--    union all
+--    select _array, i + 1, r || _array[i] from hw where i <= array_length(_array, 1)
+--)
+--select * from hw;
+
+--Ответ: здесь написан рекурсивный запрос with, 
+--в не рекурсивной части задается массив символов, 
+--начальный индекс и начальная строка (пустая строка), 
+--далее в рекурсивной части на каждой итерации к предыдущему состоянию
+--строки добавляется элемент массива, соответствующий индексу i+1 (пока I не больше длины массива). 
+--Все промежуточные результаты возвращаются как результат запроса.
