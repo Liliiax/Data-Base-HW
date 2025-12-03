@@ -54,7 +54,7 @@ insert into schema1.departments (department_id, department_name, manager_id, loc
 values (2, 'AI', 2, 1);
 
 insert into schema1.employees (employee_id, first_name, last_name, email, phone_number, hire_date, job_id, salary, department_id)
-values (1, 'Harry', 'Potter', 'harry.potter@gmail.com','8(800)555-3535'::schema1.phone_domain, '2001-07-31', 'ML', 6000, 1),
+values (1, 'Harry', 'Potter', 'h.p@mail.ru','8(800)555-3535'::schema1.phone_domain, '2001-07-31', 'ML', 6000, 1),
     (2, 'Steve', 'Harrington', 'steve.harrington@mail.ru',  '8(900)646-3636'::schema1.phone_domain, '1983-07-31', 'ML', 5000, 1),
     (3, 'Damon', 'Salvatore', 'damon.salvatore@mail.ru', '8(900)676-3636'::schema1.phone_domain, '1861-07-31', 'ML', 5000, 1);
 
@@ -442,3 +442,4 @@ select * from schema1.employees;
 commit;
 
 select * from schema1.employees; -- а вот теперь поменялся после завершения транзакции
+
